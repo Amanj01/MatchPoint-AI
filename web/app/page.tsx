@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <>
       <section className="ehero">
-        <img src={photo('1573497019940-1c28c88b4f3e', 1400)} alt="" className="bw" />
+        <img src={photo('1573496359142-b8d87734a5a2', 1400)} alt="" className="bw" />
         <div className="ehero-top">
           <span className="label">CV &amp; job matching</span>
           <span className="label">Kurdistan · Iraq</span>

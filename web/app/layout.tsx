@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <footer className="footer">
             <div>
-              <strong>MatchPoint</strong> · University project
+              <span className="brand-word"><b>Match</b>point</span> · University project
             </div>
             <div className="muted">All companies and people in this demo are fictional.</div>
           </footer>

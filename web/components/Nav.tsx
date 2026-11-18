@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '@/lib/api';
 import { useApp } from './Providers';
 import { Avatar, timeAgo } from './ui';
+import { LogoMark } from './Logo';
 
 type Note = { id: number; text: string; link: string; read: boolean; created_at: string };
 
@@ -60,8 +61,8 @@ export function Nav() {
     <header className="nav">
       <div className="nav-inner">
         <Link href={user ? `/${user.role}` : '/'} className="brand" aria-label="MatchPoint home">
-          <span className="brand-mark" aria-hidden><i /></span>
-          MatchPoint
+          <LogoMark />
+          <span className="brand-word"><b>Match</b>point</span>
         </Link>
 
         <button className="nav-burger" aria-label="Menu" aria-expanded={menu} onClick={() => setMenu(!menu)}>☰</button>

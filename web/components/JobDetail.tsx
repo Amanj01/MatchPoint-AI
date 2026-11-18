@@ -65,23 +65,31 @@ export function JobDetail({ id, variant, onChanged }: { id: number; variant: 'pa
     <div className="row" style={{ margin: '4px 0 6px' }}>
       <button className="btn primary" onClick={apply} disabled={applying || job.status === 'closed'}>{applying ? 'Sending…' : letter ? 'Apply with letter' : 'Apply now'}</button>
       <button className="btn" onClick={toggleSave} aria-pressed={d.saved}>{d.saved ? 'Saved' : 'Save'}</button>
-      {!isPage && <Link href={`/jobs/${job.id}`} className="btn ghost">Cover letter & coaching →</Link>}
+      {!isPage && <Link href={`/jobs/${job.id}`} className="arrow-link small" style={{ marginLeft: 6 }}>Cover letter</Link>}
     </div>
   );
 
   return (
     <div className={isPage ? 'job-page' : ''}>
-      <div className="job-cover">
-        {job.company.cover ? <img src={job.company.cover} alt="" /> : <div style={{ height: isPage ? 120 : 80 }} />}
-        <CompanyLogo name={job.company.name} color={job.company.color} size={isPage ? 72 : 60} />
-      </div>
+      {isPage && (
+        <div className="job-cover">
+          {job.company.cover ? <img src={job.company.cover} alt="" /> : <div style={{ height: 120 }} />}
+          <CompanyLogo name={job.company.name} color={job.company.color} size={72} />
+        </div>
+      )}
 
       <div className={isPage ? '' : 'job-body'}>
-        <div className="job-title">
+        <div className={isPage ? 'job-title' : ''}>
           <div className="row between nowrap" style={{ alignItems: 'flex-start' }}>
             <div>
-              <h1 style={{ fontSize: isPage ? undefined : '1.65rem', marginBottom: 4 }}>{job.title}</h1>
-              <p className="muted" style={{ margin: 0 }}>{job.company.name} · {job.company.industry}</p>
+              {!isPage && (
+                <div className="row nowrap" style={{ gap: 10, marginBottom: 14 }}>
+                  <CompanyLogo name={job.company.name} color={job.company.color} size={28} />
+                  <span className="label">{job.company.name}</span>
+                </div>
+              )}
+              <h1 style={{ fontSize: isPage ? undefined : '1.7rem', marginBottom: 4 }}>{job.title}</h1>
+              {isPage && <p className="muted" style={{ margin: 0 }}>{job.company.name} · {job.company.industry}</p>}
             </div>
             {match && <ScoreRing score={match.score} size={isPage ? 72 : 60} />}
           </div>
@@ -94,7 +102,7 @@ export function JobDetail({ id, variant, onChanged }: { id: number; variant: 'pa
         </div>
 
         {d.invite && !application && (
-          <div className="invite"><b>You&apos;re invited</b><p className="grow small">{d.invite.message}</p></div>
+          <p className="small" style={{ margin: '0 0 16px' }}><span className="label red">Invited</span> {job.company.name} asked you to apply.</p>
         )}
 
         {!user && !loading && (

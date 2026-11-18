@@ -566,3 +566,30 @@ ul.tidy, ol.tidy { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
 /* Black & white photography, like the reference; colour returns on hover */
 .thumb, .job-cover img, .company-hero > img, .auth-photo img, .audience img { filter: grayscale(1) contrast(1.05); transition: filter .3s; }
 .list-row:hover .thumb, .list-row.active .thumb { filter: none; }
+
+/* Wordmark: two weights, like the headlines */
+.brand { gap: 10px; }
+.brand-word { text-transform: uppercase; font-size: 0.98rem; letter-spacing: 0.02em; font-weight: 300; }
+.brand-word b { font-weight: 800; }
+
+/* Job board: quieter list and panel */
+.board .row-arrow { display: none; }
+.board .list-row { padding: 14px 14px; }
+.board .thumb { width: 40px !important; height: 40px !important; border-radius: 10px; }
+.board-detail .job-body { padding: 30px 32px 36px; }
+
+/* Pagination: editorial numbers, one red underline for the current page */
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--ink); }
+.pager-step { background: none; border: 0; padding: 6px 0; font-weight: 500; font-size: 0.86rem; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; color: var(--ink); }
+.pager-step:disabled { color: var(--faint); cursor: default; }
+.pager-step:not(:disabled):hover { color: var(--accent); }
+.pager-nums { display: flex; gap: 4px; }
+.pager-nums button { background: none; border: 0; padding: 6px 8px; font-variant-numeric: tabular-nums; font-size: 0.92rem; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+.pager-nums button:hover { color: var(--ink); }
+.pager-nums button.on { color: var(--ink); font-weight: 700; border-bottom-color: var(--accent); }
+
+/* Job board: the detail panel takes exactly the height of the list column (list + pager),
+   and scrolls inside if the job has more text. */
+.board { align-items: stretch; }
+.board-detail { position: relative; top: auto; max-height: none; overflow: hidden; min-height: 360px; }
+.board-detail-scroll { position: absolute; inset: 0; overflow-y: auto; scrollbar-width: thin; }

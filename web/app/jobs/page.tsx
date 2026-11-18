@@ -1,12 +1,13 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, type Job } from '@/lib/api';
 import { useApp } from '@/components/Providers';
 import { JobDetail } from '@/components/JobDetail';
 import { Empty, JobRow, SearchBar } from '@/components/ui';
 
 const LEVELS = ['intern', 'junior', 'mid', 'senior'];
+const PER_PAGE = 5;
 
 export default function Jobs() {
   const { user, loading } = useApp();
@@ -20,7 +21,7 @@ export default function Jobs() {
   const [selected, setSelected] = useState<number | null>(null);
   const isCandidate = user?.role === 'candidate';
 
-  // Read the initial filters from the URL once.
+  // Read the initial filters from the URL once (a ?job= link opens the page that holds it).
   useEffect(() => {
     const p = new URLSearchParams(location.search);
     setQ(p.get('q') || ''); setCity(p.get('city') || '');
@@ -44,33 +45,58 @@ export default function Jobs() {
     return out;
   }, [all, q, city, level, remote, sort, isCandidate]);
 
-  const levelCount = (l: string) => (all || []).filter((j) => j.level === l).length;
+  // ---- Pagination
+  const [page, setPage] = useState(1);
+  const pages = jobs ? Math.max(1, Math.ceil(jobs.length / PER_PAGE)) : 1;
+  const pageJobs = jobs ? jobs.slice((page - 1) * PER_PAGE, page * PER_PAGE) : null;
+  const placed = useRef(false);
 
-  // Keep a job selected, and the URL in sync so the view can be shared.
+  // New filters start again at page 1.
+  useEffect(() => { if (placed.current) { setPage(1); setSelected(null); } }, [q, city, level, remote, sort]);
+  // On first load, open the page that holds the job from the URL.
   useEffect(() => {
-    if (!jobs?.length) return;
-    if (!selected || !jobs.some((j) => j.id === selected)) setSelected(jobs[0].id);
+    if (placed.current || !jobs?.length) return;
+    placed.current = true;
+    const i = jobs.findIndex((j) => j.id === selected);
+    if (i >= 0) setPage(Math.floor(i / PER_PAGE) + 1);
   }, [jobs, selected]);
-  useEffect(() => {
-    const p = new URLSearchParams({ ...(q ? { q } : {}), ...(city ? { city } : {}), ...(selected ? { job: String(selected) } : {}) });
-    history.replaceState(null, '', `/jobs${p.toString() ? `?${p}` : ''}`);
-  }, [q, city, selected]);
 
-  // ↑ / ↓ (or j / k) move through the list.
+  function goTo(p: number) {
+    if (!jobs) return;
+    const next = Math.max(1, Math.min(pages, p));
+    setPage(next);
+    setSelected(jobs[(next - 1) * PER_PAGE]?.id ?? null);
+    listTop.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  const listTop = useRef<HTMLDivElement>(null);
+
+  // Keep a job on the current page selected, and the URL in sync so the view can be shared.
+  useEffect(() => {
+    if (!pageJobs?.length) return;
+    if (!selected || !jobs!.some((j) => j.id === selected)) setSelected(pageJobs[0].id);
+  }, [pageJobs, jobs, selected]);
+  useEffect(() => {
+    const p = new URLSearchParams({ ...(q ? { q } : {}), ...(city ? { city } : {}), ...(page > 1 ? { page: String(page) } : {}), ...(selected ? { job: String(selected) } : {}) });
+    history.replaceState(null, '', `/jobs${p.toString() ? `?${p}` : ''}`);
+  }, [q, city, page, selected]);
+
+  // ↑ / ↓ (or j / k) move through the list, flipping pages at the edges. ← / → change page.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!jobs?.length || (e.target as HTMLElement).closest('input, textarea, select')) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); goTo(page + (e.key === 'ArrowRight' ? 1 : -1)); return; }
       const i = jobs.findIndex((j) => j.id === selected);
       const next = e.key === 'ArrowDown' || e.key === 'j' ? i + 1 : e.key === 'ArrowUp' || e.key === 'k' ? i - 1 : null;
       if (next === null) return;
       e.preventDefault();
-      const j = jobs[Math.max(0, Math.min(jobs.length - 1, next))];
-      setSelected(j.id);
-      document.getElementById(`job-${j.id}`)?.scrollIntoView({ block: 'nearest' });
+      const n = Math.max(0, Math.min(jobs.length - 1, next));
+      setSelected(jobs[n].id);
+      setPage(Math.floor(n / PER_PAGE) + 1);
+      setTimeout(() => document.getElementById(`job-${jobs[n].id}`)?.scrollIntoView({ block: 'nearest' }));
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [jobs, selected]);
+  });
 
   const pick = (id: number) => {
     if (window.innerWidth < 960) router.push(`/jobs/${id}`);
@@ -90,9 +116,9 @@ export default function Jobs() {
 
       <div className="board-toolbar">
         <div className="pills" role="group" aria-label="Level">
-          <button className={`pill-btn ${!level ? 'on' : ''}`} onClick={() => setLevel('')}>All<span className="n">{all?.length ?? ''}</span></button>
+          <button className={`pill-btn ${!level ? 'on' : ''}`} onClick={() => setLevel('')}>All</button>
           {LEVELS.map((l) => (
-            <button key={l} className={`pill-btn ${level === l ? 'on' : ''}`} onClick={() => setLevel(level === l ? '' : l)} style={{ textTransform: 'capitalize' }}>{l}<span className="n">{levelCount(l)}</span></button>
+            <button key={l} className={`pill-btn ${level === l ? 'on' : ''}`} onClick={() => setLevel(level === l ? '' : l)} style={{ textTransform: 'capitalize' }}>{l}</button>
           ))}
         </div>
         <div className="row">
@@ -106,18 +132,32 @@ export default function Jobs() {
         </div>
       </div>
 
+      <p className="small" style={{ margin: '8px 0 10px' }}><span className="label">{jobs ? (jobs.length > PER_PAGE ? `${(page - 1) * PER_PAGE + 1}–${Math.min(page * PER_PAGE, jobs.length)} of ${jobs.length} jobs` : `${jobs.length} jobs`) : 'Loading'}</span></p>
+
       <div className="board">
-        <div className="board-list">
-          <p className="muted small" style={{ margin: '8px 0' }}>
-            {jobs ? `${jobs.length} job${jobs.length === 1 ? '' : 's'}` : 'Loading…'}
-            <span style={{ float: 'right' }}><span className="kbd">↑</span> <span className="kbd">↓</span> to browse</span>
-          </p>
+        <div className="board-list" ref={listTop} style={{ scrollMarginTop: 90 }}>
           {jobs === null ? [0, 1, 2, 3, 4].map((k) => <div key={k} className="skeleton" style={{ height: 72, margin: '8px 0' }} />)
             : jobs.length === 0 ? <Empty title="No jobs match"><p>Try another keyword or clear the filters.</p></Empty>
-            : <div className="list">{jobs.map((j) => <div key={j.id} id={`job-${j.id}`}><JobRow job={j} active={j.id === selected} onSelect={() => pick(j.id)} /></div>)}</div>}
+            : <div className="list">{pageJobs!.map((j) => <div key={j.id} id={`job-${j.id}`}><JobRow job={j} active={j.id === selected} onSelect={() => pick(j.id)} /></div>)}</div>}
+
+          {pages > 1 && (
+            <nav className="pager" aria-label="Pages">
+              <button className="pager-step" onClick={() => goTo(page - 1)} disabled={page === 1} aria-label="Previous page">← Prev</button>
+              <div className="pager-nums">
+                {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+                  <button key={n} className={n === page ? 'on' : ''} onClick={() => goTo(n)} aria-current={n === page ? 'page' : undefined} aria-label={`Page ${n}`}>
+                    {String(n).padStart(2, '0')}
+                  </button>
+                ))}
+              </div>
+              <button className="pager-step" onClick={() => goTo(page + 1)} disabled={page === pages} aria-label="Next page">Next →</button>
+            </nav>
+          )}
         </div>
         <div className="board-detail" aria-live="polite">
-          {selected ? <JobDetail key={selected} id={selected} variant="pane" onChanged={load} /> : <div className="job-body"><Empty title="Pick a job" /></div>}
+          <div className="board-detail-scroll">
+            {selected ? <JobDetail key={selected} id={selected} variant="pane" onChanged={load} /> : <div className="job-body"><Empty title="Pick a job" /></div>}
+          </div>
         </div>
       </div>
     </div>
