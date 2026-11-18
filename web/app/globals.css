@@ -346,7 +346,7 @@ ul.tidy, ol.tidy { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
 .auth { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 61px); }
 .auth-form { display: flex; flex-direction: column; justify-content: center; padding: 48px max(24px, 8vw); max-width: 620px; width: 100%; justify-self: center; }
 .auth-photo { position: relative; margin: 16px; border-radius: 28px; overflow: hidden; }
-.auth-photo img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.auth-photo > img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 .auth-photo blockquote { position: absolute; left: 28px; right: 28px; bottom: 28px; margin: 0; background: rgb(255 255 255 / 92%); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px 22px; font-size: 1.02rem; line-height: 1.45; }
 .auth-photo cite { display: flex; gap: 10px; align-items: center; font-style: normal; font-size: 0.86rem; color: var(--muted); margin-top: 12px; }
 .demo-box { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 0.88rem; }
@@ -593,3 +593,29 @@ ul.tidy, ol.tidy { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
 .board { align-items: stretch; }
 .board-detail { position: relative; top: auto; max-height: none; overflow: hidden; min-height: 360px; }
 .board-detail-scroll { position: absolute; inset: 0; overflow-y: auto; scrollbar-width: thin; }
+
+/* Sign-up / log-in: softer cards and hairline strokes */
+.role-pick { gap: 12px; }
+.role-pick button {
+  position: relative; padding: 18px 44px 18px 18px; border-radius: 18px;
+  border: 1px solid var(--line); background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 3%);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.role-pick button:hover { border-color: #c9c9c5; transform: translateY(-1px); }
+.role-pick button.on { border-color: var(--ink); background: #fff; box-shadow: 0 10px 28px -16px rgb(0 0 0 / 35%); }
+.role-pick button b { font-weight: 600; letter-spacing: -0.01em; }
+.role-pick button .muted { display: block; margin-top: 4px; line-height: 1.4; }
+.role-pick button::after {
+  content: ''; position: absolute; top: 18px; right: 16px; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid #c9c9c5; background: #fff; transition: all .2s ease;
+}
+.role-pick button.on::after { border-color: var(--ink); background: var(--ink); box-shadow: inset 0 0 0 4px #fff; }
+
+.auth-form .input { border-color: #e2e2de; border-radius: 14px; padding: 13px 14px; box-shadow: none; }
+.auth-form .input:hover { border-color: #cfcfcb; }
+.auth-form .input:focus { border-color: var(--ink); box-shadow: 0 0 0 4px rgb(17 17 17 / 6%); }
+.auth-form label.field { gap: 8px; }
+.auth-form label.field small { margin-top: -2px; }
+.auth-photo blockquote cite { margin-top: 14px; }
+.role-pick { align-items: stretch; } .role-pick button { height: 100%; display: block; }

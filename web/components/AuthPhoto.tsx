@@ -4,12 +4,12 @@ const QUOTES = {
   login: {
     img: '1531482615713-2afd69097998',
     text: 'I listed my skills on a Sunday. By Wednesday I had two interviews and an invite I didn’t even apply for.',
-    who: 'Shilan, Frontend Developer', face: 'https://randomuser.me/api/portraits/women/48.jpg',
+    who: 'Shilan, Frontend Developer',
   },
   register: {
     img: '1522071820081-009f0129c71c',
     text: 'We posted one role and the best three candidates were already at the top of the list. Hiring took a week.',
-    who: 'Hemin, Head of Engineering', face: 'https://randomuser.me/api/portraits/men/32.jpg',
+    who: 'Hemin, Head of Engineering',
   },
 };
 
@@ -21,7 +21,7 @@ export function AuthPhoto({ variant }: { variant: keyof typeof QUOTES }) {
       <img src={photo(q.img, 1200)} alt="" />
       <blockquote>
         “{q.text}”
-        <cite><img src={q.face} alt="" width={28} height={28} style={{ borderRadius: '50%' }} />{q.who}</cite>
+        <cite>— {q.who}</cite>
       </blockquote>
     </div>
   );

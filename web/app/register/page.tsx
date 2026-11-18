@@ -33,10 +33,10 @@ export default function Register() {
         <p className="muted">Free, and takes about five minutes.</p>
         <div className="role-pick" role="radiogroup" aria-label="Account type">
           <button type="button" role="radio" aria-checked={role === 'candidate'} className={role === 'candidate' ? 'on' : ''} onClick={() => setRole('candidate')}>
-            <b>I&apos;m looking for a job</b><span className="muted small">Get a CV and job matches</span>
+            <b>Find a job</b><span className="muted small">Get a CV and job matches</span>
           </button>
           <button type="button" role="radio" aria-checked={role === 'employer'} className={role === 'employer' ? 'on' : ''} onClick={() => setRole('employer')}>
-            <b>I&apos;m hiring</b><span className="muted small">Post jobs, meet candidates</span>
+            <b>Hire people</b><span className="muted small">Post jobs, meet candidates</span>
           </button>
         </div>
         <form className="stack" onSubmit={submit}>
