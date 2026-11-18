@@ -21,7 +21,7 @@ function Company() {
   return (
     <div className="page narrow">
       <div className="page-head"><div className="row"><CompanyLogo name={c.name} color={c.color} size={56} /><div><h1 style={{ margin: 0 }}>Company profile</h1><p className="muted">Candidates see this on every job you post.</p></div></div></div>
-      <form className="card stack" onSubmit={save}>
+      <form className="stack" onSubmit={save}>
         <div className="form-grid">
           <label className="field">Name<input className="input" value={c.name} onChange={set('name')} required /></label>
           <label className="field">Industry<input className="input" value={c.industry} onChange={set('industry')} /></label>

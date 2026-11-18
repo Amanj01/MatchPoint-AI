@@ -144,3 +144,7 @@ CREATE TABLE IF NOT EXISTS ai_cache (
   result     JSONB NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Photos (seeded demo data uses external portrait and office images)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS cover_url TEXT;

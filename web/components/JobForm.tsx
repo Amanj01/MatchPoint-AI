@@ -49,17 +49,17 @@ export function JobForm({ job }: { job?: Job }) {
   return (
     <div className="stack">
       {!job && (
-        <div className="card ai-panel">
-          <div className="card-title"><h2>Describe the role in a sentence</h2><AiTag meta={meta} /></div>
+        <div className="panel lime">
+          <div className="row between" style={{ marginBottom: 12 }}><h2 style={{ margin: 0 }}>Describe the role in a sentence</h2><AiTag meta={meta} /></div>
           <textarea className="input" rows={3} value={brief} onChange={(e) => setBrief(e.target.value)} placeholder="e.g. We need a junior React developer who knows TypeScript and Tailwind to build our merchant dashboard in Erbil." aria-label="Role brief" />
           <div className="row" style={{ marginTop: 12 }}>
-            {drafting ? <Thinking text="Drafting your job post" /> : <button className="btn ai" onClick={draft} disabled={brief.trim().length < 10}>✦ {meta ? 'Rewrite draft' : 'Write the job post'}</button>}
+            {drafting ? <Thinking text="Drafting your job post" /> : <button className="btn ai" onClick={draft} disabled={brief.trim().length < 10}>{meta ? 'Rewrite draft' : 'Write the job post'}</button>}
             <span className="muted small">You can edit everything below before publishing.</span>
           </div>
         </div>
       )}
 
-      <form className="card stack" onSubmit={save}>
+      <form className="stack" onSubmit={save}>
         <div className="form-grid">
           <label className="field full">Job title<input className="input" value={f.title} onChange={(e) => set('title', e.target.value)} required /></label>
           <label className="field">Level

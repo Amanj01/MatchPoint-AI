@@ -30,7 +30,7 @@ export const dashboard: Handler = async (_req, ctx) => {
     WHERE jb.company_id = ${u.company_id} GROUP BY a.status`;
   const byJob = await sql`SELECT a.job_id, a.status, count(*)::int AS n FROM applications a JOIN jobs jb ON jb.id = a.job_id
     WHERE jb.company_id = ${u.company_id} GROUP BY a.job_id, a.status`;
-  const recent = await sql`SELECT a.id, a.match_score, a.status, a.created_at, u.id AS user_id, u.name, u.avatar_color, jb.id AS job_id, jb.title
+  const recent = await sql`SELECT a.id, a.match_score, a.status, a.created_at, u.id AS user_id, u.name, u.avatar_color, u.avatar_url, jb.id AS job_id, jb.title
     FROM applications a JOIN users u ON u.id = a.user_id JOIN jobs jb ON jb.id = a.job_id
     WHERE jb.company_id = ${u.company_id} ORDER BY a.created_at DESC LIMIT 8`;
   const [avg] = await sql`SELECT COALESCE(round(avg(a.match_score)), 0)::int AS n FROM applications a JOIN jobs jb ON jb.id = a.job_id WHERE jb.company_id = ${u.company_id}`;
@@ -109,7 +109,7 @@ export const draft: Handler = async (req, ctx) => {
 export const jobCandidates: Handler = async (req, ctx) => {
   const { job } = await ownJob(ctx, int(req.params.id));
   const all = await loadOpenCandidates();
-  const apps = await sql`SELECT a.*, u.name, u.avatar_color FROM applications a JOIN users u ON u.id = a.user_id WHERE a.job_id = ${job.id}`;
+  const apps = await sql`SELECT a.*, u.name, u.avatar_color, u.avatar_url FROM applications a JOIN users u ON u.id = a.user_id WHERE a.job_id = ${job.id}`;
   const invites = new Set((await sql`SELECT user_id FROM invites WHERE job_id = ${job.id}`).map((r: any) => r.user_id));
   const appliedIds = new Set(apps.map((a: any) => a.user_id));
 
@@ -159,7 +159,7 @@ export const viewCandidate: Handler = async (req, ctx) => {
   }
   const [recent] = await sql`SELECT 1 FROM notifications WHERE user_id = ${c.user.id} AND text = ${`${u.company_name} viewed your CV`} AND created_at > now() - interval '1 day'`;
   if (!recent) await notify(c.user.id, `${u.company_name} viewed your CV`, '/candidate');
-  return { candidate: { id: c.user.id, name: c.user.name, avatar_color: c.user.avatar_color }, cv: c.cv, profile: { years_experience: c.profile.years_experience, location: c.profile.location }, match, application: application || null };
+  return { candidate: { id: c.user.id, name: c.user.name, avatar_color: c.user.avatar_color, avatar_url: c.user.avatar_url }, cv: c.cv, profile: { years_experience: c.profile.years_experience, location: c.profile.location }, match, application: application || null };
 };
 
 export const insight: Handler = async (req, ctx) => {

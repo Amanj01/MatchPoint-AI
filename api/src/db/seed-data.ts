@@ -67,3 +67,29 @@ export const ARCHETYPES: Archetype[] = [
   { role: 'Customer Success Specialist', degree: 'BA English Language', core: ['Communication', 'Customer Service', 'English'], extra: ['CRM', 'Excel', 'Arabic', 'Team Work', 'Problem Solving', 'Presentation'], titles: ['Customer Support Agent', 'Customer Success Associate'], companies: ['Mesopotamia Mobile', 'Korek Travel', 'Call Centre Erbil'], duties: ['Handled 60+ customer chats a day with a 96% satisfaction score. Trained 5 new agents.', 'Built an FAQ that cut repeat questions by a third.'], projects: [{ name: 'Support Playbook', description: 'Written guide for handling angry customers calmly.', tech: ['Notion'] }], passions: ['I love helping people solve problems and leaving them happier than when they called.'] },
   { role: 'Cybersecurity Analyst', degree: 'BSc Information Security', core: ['Cybersecurity', 'Networking', 'Linux'], extra: ['Python', 'Problem Solving', 'SQL', 'Communication'], titles: ['Security Analyst', 'SOC Intern', 'IT Security Assistant'], companies: ['Secure Kurdistan', 'Bank IT Department'], duties: ['Monitored security alerts and triaged incidents in a SOC team. Wrote 20 detection rules.', 'Ran internal phishing tests and trained staff.'], projects: [{ name: 'CTF Team Lead', description: 'Led university team to 2nd place in a national capture-the-flag contest.', tech: ['Linux', 'Python'] }], passions: ['Breaking things to make them safer is my favourite puzzle.'] },
 ];
+
+// ---- Photos (external, for the demo only)
+const unsplash = (id: string, w = 1200) => `https://images.unsplash.com/photo-${id}?w=${w}&q=70&auto=format&fit=crop`;
+
+export const COMPANY_COVERS: Record<string, string> = {
+  nova: unsplash('1560179707-f14e90ef3623'),
+  zagros: unsplash('1504384308090-c894fdcc538d'),
+  hawler: unsplash('1497215728101-856f4ea42174'),
+  bazaar: unsplash('1552664730-d307ca884978'),
+  green: unsplash('1509391366360-2e959784a276'),
+  tigris: unsplash('1551434678-e076c223a692'),
+  meso: unsplash('1508385082359-f38ae991e8f2'),
+  chira: unsplash('1497032628192-86f99bcd76bc'),
+  edu: unsplash('1531482615713-2afd69097998'),
+  atlas: unsplash('1581092160562-40aa08e78837'),
+};
+
+const FEMALE = new Set(['Shilan', 'Dilan', 'Lana', 'Sara', 'Zhwan', 'Nashmil', 'Hana', 'Rozh', 'Sozan', 'Darya', 'Avan', 'Rawa', 'Lavin', 'Hevi', 'Noor', 'Bahar', 'Kani', 'Ronak', 'Shene', 'Layla', 'Tara', 'Bushra', 'Chiman', 'Huda']);
+const used = { women: 0, men: 0 };
+/** A different portrait for each person, matched to the first name. */
+export function portraitFor(name: string) {
+  const g = FEMALE.has(name.split(' ')[0]) ? 'women' : 'men';
+  const n = (used[g] * 37 + 11) % 99; // spread across the set, no repeats for < 99 people
+  used[g]++;
+  return `https://randomuser.me/api/portraits/${g}/${n}.jpg`;
+}

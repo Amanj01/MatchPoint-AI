@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api, type User } from '@/lib/api';
 import { useApp } from '@/components/Providers';
+import { AuthPhoto } from '@/components/AuthPhoto';
 
 export default function Register() {
   const { setUser } = useApp();
@@ -27,11 +28,16 @@ export default function Register() {
 
   return (
     <div className="auth">
-      <div className="card">
+      <div className="auth-form">
         <h1>Create your account</h1>
-        <div className="segmented" role="tablist" style={{ margin: '8px 0 20px' }}>
-          <button type="button" className={role === 'candidate' ? 'on' : ''} onClick={() => setRole('candidate')}>I&apos;m looking for a job</button>
-          <button type="button" className={role === 'employer' ? 'on' : ''} onClick={() => setRole('employer')}>I&apos;m hiring</button>
+        <p className="muted">Free, and takes about five minutes.</p>
+        <div className="role-pick" role="radiogroup" aria-label="Account type">
+          <button type="button" role="radio" aria-checked={role === 'candidate'} className={role === 'candidate' ? 'on' : ''} onClick={() => setRole('candidate')}>
+            <b>I&apos;m looking for a job</b><span className="muted small">Get a CV and job matches</span>
+          </button>
+          <button type="button" role="radio" aria-checked={role === 'employer'} className={role === 'employer' ? 'on' : ''} onClick={() => setRole('employer')}>
+            <b>I&apos;m hiring</b><span className="muted small">Post jobs, meet candidates</span>
+          </button>
         </div>
         <form className="stack" onSubmit={submit}>
           <label className="field">Full name<input className="input" value={form.name} onChange={set('name')} required autoComplete="name" /></label>
@@ -48,6 +54,7 @@ export default function Register() {
         </form>
         <p className="muted small" style={{ marginTop: 16, marginBottom: 0 }}>Already have an account? <Link href="/login" className="btn-link">Log in</Link></p>
       </div>
+      <AuthPhoto variant={"register"} />
     </div>
   );
 }

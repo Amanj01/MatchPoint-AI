@@ -55,8 +55,18 @@ function Builder() {
     } catch (e: any) { toast(e.message, 'error'); setGenerating(false); }
   }
 
+  const SECTIONS: [string, string, boolean][] = [
+    ["basics", "Basics", !!p.desired_role],
+    ["passion", "Your passion", p.passion.length > 40],
+    ["skills", "Skills", p.skills.length >= 5],
+    ["experience", "Experience", p.experience.length > 0],
+    ["projects", "Projects", p.projects.length > 0],
+    ["education", "Education", p.education.length > 0],
+    ["languages", "Languages", p.languages.length > 0],
+  ];
+
   return (
-    <div className="page narrow">
+    <div className="page" style={{ maxWidth: 1040 }}>
       <div className="page-head">
         <div>
           <h1>Tell the agent about you</h1>
@@ -65,8 +75,12 @@ function Builder() {
         <ScoreRing score={strength.percent} size={60} />
       </div>
 
-      <div className="stack">
-        <section className="card builder-section">
+      <div className="builder">
+        <nav className="builder-nav" aria-label="Sections">
+          {SECTIONS.map(([id, label, done]) => <a key={id} href={`#${id}`} className={done ? "done" : ""}><i>{done ? "✓" : ""}</i>{label}</a>)}
+        </nav>
+        <div>
+        <section className="builder-section" id="basics">
           <h2>The basics</h2>
           <div className="form-grid">
             <label className="field">Role you want<input className="input" value={p.desired_role} onChange={(e) => set('desired_role', e.target.value)} placeholder="e.g. Frontend Developer" /></label>
@@ -78,7 +92,7 @@ function Builder() {
           <label className="check"><input type="checkbox" checked={p.open_to_work} onChange={(e) => set('open_to_work', e.target.checked)} /> Open to work: let employers find and invite me</label>
         </section>
 
-        <section className="card builder-section">
+        <section className="builder-section" id="passion">
           <h2>Your passion</h2>
           <label className="field">What do you love doing, and what do you want next?
             <small>A few honest sentences. This becomes the heart of your CV summary.</small>
@@ -86,12 +100,12 @@ function Builder() {
           </label>
         </section>
 
-        <section className="card builder-section">
+        <section className="builder-section" id="skills">
           <h2>Skills</h2>
           <TagInput value={p.skills} onChange={(v) => set('skills', v)} placeholder="Type a skill and press Enter" suggestions={SKILL_SUGGESTIONS} />
         </section>
 
-        <section className="card builder-section">
+        <section className="builder-section" id="experience">
           <div className="row between"><h2 style={{ margin: 0 }}>Experience</h2><button className="btn sm" onClick={() => set('experience', [...p.experience, { title: '', company: '', start: '', end: '', description: '' }])}>+ Add</button></div>
           {p.experience.length === 0 && <p className="muted small">Internships, part-time jobs and volunteering all count.</p>}
           {p.experience.map((e, i) => (
@@ -108,7 +122,7 @@ function Builder() {
           ))}
         </section>
 
-        <section className="card builder-section">
+        <section className="builder-section" id="projects">
           <div className="row between"><h2 style={{ margin: 0 }}>Projects</h2><button className="btn sm" onClick={() => set('projects', [...p.projects, { name: '', description: '', tech: [] }])}>+ Add</button></div>
           {p.projects.map((pr, i) => (
             <div key={i} className="repeat">
@@ -120,7 +134,7 @@ function Builder() {
           ))}
         </section>
 
-        <section className="card builder-section">
+        <section className="builder-section" id="education">
           <div className="row between"><h2 style={{ margin: 0 }}>Education</h2><button className="btn sm" onClick={() => set('education', [...p.education, { degree: '', school: '', start: '', end: '', details: '' }])}>+ Add</button></div>
           {p.education.map((ed, i) => (
             <div key={i} className="repeat">
@@ -136,17 +150,18 @@ function Builder() {
           ))}
         </section>
 
-        <section className="card builder-section">
+        <section className="builder-section" id="languages">
           <h2>Languages</h2>
           <TagInput value={p.languages} onChange={(v) => set('languages', v)} placeholder="Add a language" suggestions={LANG_SUGGESTIONS} />
         </section>
+        </div>
       </div>
 
       <div className="save-bar">
         {generating ? <Thinking text="Writing your CV" /> : (
           <>
             <button className="btn" onClick={() => save()} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
-            <button className="btn ai lg" onClick={generate} disabled={saving}>✦ {hasCv ? 'Save & rewrite my CV' : 'Generate my CV with AI'}</button>
+            <button className="btn primary lg" onClick={generate} disabled={saving}>{hasCv ? 'Save & rewrite my CV' : 'Generate my CV with AI'}</button>
           </>
         )}
       </div>

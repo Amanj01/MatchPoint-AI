@@ -5,7 +5,7 @@ export class HttpError extends Error {
 export type Req = Request & { params: Record<string, string> };
 export type Handler = (req: Req, ctx: Ctx) => Promise<Response | unknown> | Response | unknown;
 export type Ctx = { user: SessionUser | null; url: URL; setCookie?: string };
-export type SessionUser = { id: number; email: string; name: string; role: 'candidate' | 'employer'; avatar_color: string; company_id: number | null; company_name: string | null };
+export type SessionUser = { id: number; email: string; name: string; role: 'candidate' | 'employer'; avatar_color: string; avatar_url: string | null; company_id: number | null; company_name: string | null };
 
 export function json(data: unknown, status = 200, headers: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', ...headers } });

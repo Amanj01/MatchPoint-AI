@@ -3,7 +3,7 @@
 import { sql, j } from './client';
 import { mockCV } from '../lib/ai';
 import { scoreMatch } from '../lib/match';
-import { ARCHETYPES, CITIES, COMPANIES, FIRST, JOBS, LAST, SCHOOLS } from './seed-data';
+import { ARCHETYPES, CITIES, COMPANIES, COMPANY_COVERS, FIRST, JOBS, LAST, SCHOOLS, portraitFor } from './seed-data';
 
 let seed = 20261118;
 const rand = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
@@ -25,10 +25,10 @@ const recruiterNames = ['Dlshad Omer', 'Shilan Aziz', 'Karzan Rashid', 'Bushra S
 const companyId: Record<string, number> = {};
 const companyOwner: Record<string, number> = {};
 for (const [i, c] of COMPANIES.entries()) {
-  const [u] = await sql`INSERT INTO users (email, password_hash, name, role, avatar_color, created_at)
-    VALUES (${`hr@${c.key}.demo`}, ${hash}, ${recruiterNames[i]}, 'employer', ${c.color}, ${ago(60 + i)}) RETURNING id`;
-  const [row] = await sql`INSERT INTO companies (owner_id, name, industry, size, location, website, about, color, created_at)
-    VALUES (${u.id}, ${c.name}, ${c.industry}, ${c.size}, ${c.location}, ${c.website}, ${c.about}, ${c.color}, ${ago(60 + i)}) RETURNING id`;
+  const [u] = await sql`INSERT INTO users (email, password_hash, name, role, avatar_color, avatar_url, created_at)
+    VALUES (${`hr@${c.key}.demo`}, ${hash}, ${recruiterNames[i]}, 'employer', ${c.color}, ${portraitFor(recruiterNames[i])}, ${ago(60 + i)}) RETURNING id`;
+  const [row] = await sql`INSERT INTO companies (owner_id, name, industry, size, location, website, about, color, cover_url, created_at)
+    VALUES (${u.id}, ${c.name}, ${c.industry}, ${c.size}, ${c.location}, ${c.website}, ${c.about}, ${c.color}, ${COMPANY_COVERS[c.key]}, ${ago(60 + i)}) RETURNING id`;
   companyId[c.key] = row.id;
   companyOwner[c.key] = u.id;
 }
@@ -50,8 +50,8 @@ type Cand = { id: number; name: string; profile: any; cv: any; demo?: boolean };
 const cands: Cand[] = [];
 
 async function addCandidate(name: string, email: string, profile: any, withCv: boolean, createdDaysAgo: number, demo = false) {
-  const [u] = await sql`INSERT INTO users (email, password_hash, name, role, avatar_color, created_at)
-    VALUES (${email}, ${hash}, ${name}, 'candidate', ${pick(COLORS)}, ${ago(createdDaysAgo)}) RETURNING id`;
+  const [u] = await sql`INSERT INTO users (email, password_hash, name, role, avatar_color, avatar_url, created_at)
+    VALUES (${email}, ${hash}, ${name}, 'candidate', ${pick(COLORS)}, ${portraitFor(name)}, ${ago(createdDaysAgo)}) RETURNING id`;
   await sql`INSERT INTO profiles (user_id, headline, desired_role, location, phone, links, passion, years_experience, skills, experience, education, projects, languages, open_to_work, updated_at)
     VALUES (${u.id}, '', ${profile.desired_role}, ${profile.location}, ${profile.phone}, ${profile.links}, ${profile.passion}, ${profile.years_experience},
             ${j(profile.skills)}::jsonb, ${j(profile.experience)}::jsonb, ${j(profile.education)}::jsonb, ${j(profile.projects)}::jsonb, ${j(profile.languages)}::jsonb,

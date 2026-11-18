@@ -59,9 +59,9 @@ export function Nav() {
   return (
     <header className="nav">
       <div className="nav-inner">
-        <Link href={user ? `/${user.role}` : '/'} className="brand" aria-label="MatchPoint AI home">
-          <span className="brand-mark" aria-hidden><i /><i /></span>
-          MatchPoint<span className="brand-ai">AI</span>
+        <Link href={user ? `/${user.role}` : '/'} className="brand" aria-label="MatchPoint home">
+          <span className="brand-mark" aria-hidden><i /></span>
+          MatchPoint
         </Link>
 
         <button className="nav-burger" aria-label="Menu" aria-expanded={menu} onClick={() => setMenu(!menu)}>☰</button>
@@ -69,6 +69,9 @@ export function Nav() {
           {links.map(([href, label]) => (
             <Link key={href} href={href} className={path === href ? 'active' : ''}>{label}</Link>
           ))}
+          {user
+            ? <button className="mobile-only nav-menu-btn" onClick={logout}>Log out</button>
+            : <Link href="/login" className="mobile-only">Log in</Link>}
         </nav>
 
         <div className="nav-right">
@@ -92,7 +95,7 @@ export function Nav() {
                 )}
               </div>
               <span className="who">
-                <Avatar name={user.name} color={user.avatar_color} size={32} />
+                <Avatar name={user.name} color={user.avatar_color} src={user.avatar_url} size={32} />
                 <span className="who-text"><strong>{user.name.split(' ')[0]}</strong><small>{user.role === 'employer' ? user.company_name : 'Job seeker'}</small></span>
               </span>
               <button className="btn ghost sm" onClick={logout}>Log out</button>

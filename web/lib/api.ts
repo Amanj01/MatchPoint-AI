@@ -15,7 +15,7 @@ export async function api<T = any>(path: string, opts: { method?: string; body?:
   return data as T;
 }
 
-export type User = { id: number; email: string; name: string; role: 'candidate' | 'employer'; avatar_color: string; company_id: number | null; company_name: string | null };
+export type User = { id: number; email: string; name: string; role: 'candidate' | 'employer'; avatar_color: string; avatar_url: string | null; company_id: number | null; company_name: string | null };
 
 export type Match = {
   score: number; label: string;
@@ -28,7 +28,7 @@ export type Job = {
   salary_min: number | null; salary_max: number | null; currency: string;
   description: string; responsibilities: string[]; requirements: string[]; nice_to_have: string[];
   status: 'open' | 'closed'; views: number; created_at: string; applicants: number; applicants_today?: number;
-  company: { id: number; name: string; color: string; industry: string; location: string; about?: string; size?: string; website?: string };
+  company: { id: number; name: string; color: string; industry: string; location: string; cover?: string | null; about?: string; size?: string; website?: string };
   match?: Match; applied?: boolean; saved?: boolean;
 };
 

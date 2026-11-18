@@ -93,7 +93,7 @@ export const dashboard: Handler = async (_req, ctx) => {
 
   const counts: Record<string, number> = {};
   for (const a of apps) counts[a.status] = (counts[a.status] || 0) + 1;
-  const invites = await sql`SELECT i.job_id, i.message, i.created_at, jb.title, c.name AS company, c.color
+  const invites = await sql`SELECT i.job_id, i.message, i.created_at, jb.title, c.name AS company, c.color, c.cover_url AS cover
     FROM invites i JOIN jobs jb ON jb.id = i.job_id JOIN companies c ON c.id = jb.company_id
     WHERE i.user_id = ${user.id} AND NOT EXISTS (SELECT 1 FROM applications a WHERE a.job_id = i.job_id AND a.user_id = i.user_id)
     ORDER BY i.created_at DESC`;
@@ -113,7 +113,7 @@ export const applications: Handler = async (_req, ctx) => {
   const user = need(ctx, 'candidate');
   const rows = await sql`
     SELECT a.id, a.status, a.match_score, a.created_at, a.updated_at, a.source,
-           jb.id AS job_id, jb.title, jb.location, jb.remote, c.name AS company, c.color
+           jb.id AS job_id, jb.title, jb.location, jb.remote, c.name AS company, c.color, c.cover_url AS cover
     FROM applications a JOIN jobs jb ON jb.id = a.job_id JOIN companies c ON c.id = jb.company_id
     WHERE a.user_id = ${user.id} ORDER BY a.updated_at DESC`;
   const events = await sql`SELECT e.application_id, e.status, e.created_at FROM application_events e

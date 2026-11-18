@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { RequireRole } from '@/components/Providers';
-import { CompanyLogo, Empty, Pipeline, ScoreRing, StatusPill, timeAgo } from '@/components/ui';
+import { CompanyLogo, Empty, MatchBadge, Pipeline, StatusPill, timeAgo } from '@/components/ui';
 
 type App = { id: number; status: string; match_score: number; created_at: string; updated_at: string; source: string; job_id: number; title: string; location: string; remote: boolean; company: string; color: string };
 
@@ -13,35 +13,35 @@ function Applications() {
   useEffect(() => { api<{ applications: App[] }>('/me/applications').then((d) => setApps(d.applications)); }, []);
   if (!apps) return <div className="page"><div className="skeleton" style={{ height: 300 }} /></div>;
   const active = apps.filter((a) => !['rejected', 'hired'].includes(a.status));
-  const shown = filter === 'all' ? apps : filter === 'active' ? active : apps.filter((a) => a.status === 'rejected' || a.status === 'hired');
+  const closed = apps.filter((a) => ['rejected', 'hired'].includes(a.status));
+  const shown = filter === 'all' ? apps : filter === 'active' ? active : closed;
 
   return (
-    <div className="page">
+    <div className="page" style={{ maxWidth: 960 }}>
       <div className="page-head">
-        <div><h1>My applications</h1><p className="muted">Live status from each employer. You get a notification whenever something changes.</p></div>
-        <div className="segmented">
-          <button className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')}>All ({apps.length})</button>
-          <button className={filter === 'active' ? 'on' : ''} onClick={() => setFilter('active')}>Active ({active.length})</button>
-          <button className={filter === 'closed' ? 'on' : ''} onClick={() => setFilter('closed')}>Closed</button>
+        <div><h1>Applications</h1><p className="muted">Live status from each employer. You&apos;re notified whenever something changes.</p></div>
+        <div className="pills">
+          <button className={`pill-btn ${filter === 'all' ? 'on' : ''}`} onClick={() => setFilter('all')}>All<span className="n">{apps.length}</span></button>
+          <button className={`pill-btn ${filter === 'active' ? 'on' : ''}`} onClick={() => setFilter('active')}>Active<span className="n">{active.length}</span></button>
+          <button className={`pill-btn ${filter === 'closed' ? 'on' : ''}`} onClick={() => setFilter('closed')}>Closed<span className="n">{closed.length}</span></button>
         </div>
       </div>
       {shown.length === 0 ? (
-        <Empty title="No applications here"><p>Find a job that matches you and apply in one click.</p><Link href="/jobs" className="btn accent">Browse jobs</Link></Empty>
+        <Empty title="Nothing here yet"><p>Find a job that matches you and apply in one click.</p><Link href="/jobs" className="btn primary">Browse jobs</Link></Empty>
       ) : (
-        <div className="stack">
+        <div className="list">
           {shown.map((a) => (
-            <Link key={a.id} href={`/jobs/${a.job_id}`} className="card job-card">
-              <div className="job-card-top">
-                <CompanyLogo name={a.company} color={a.color} />
-                <div className="grow">
-                  <h3>{a.title}</h3>
-                  <p className="muted small">{a.company} · {a.remote ? 'Remote' : a.location} · applied {timeAgo(a.created_at)}{a.source === 'invited' ? ' · invited by employer' : ''}</p>
-                </div>
-                <StatusPill status={a.status} />
-                <ScoreRing score={a.match_score} size={46} />
+            <Link key={a.id} href={`/jobs/${a.job_id}`} className="list-row" style={{ display: 'grid', gridTemplateColumns: '44px minmax(0,1fr) minmax(0,1.1fr) auto', gap: 18 }}>
+              <CompanyLogo name={a.company} color={a.color} size={44} />
+              <div>
+                <h3>{a.title}</h3>
+                <p className="meta"><span>{a.company}</span><span>{a.remote ? 'Remote' : a.location}</span><span>applied {timeAgo(a.created_at)}</span></p>
               </div>
               <Pipeline status={a.status} />
-              <p className="muted small" style={{ margin: 0 }}>Last update {timeAgo(a.updated_at)}</p>
+              <div className="side" style={{ flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                <StatusPill status={a.status} />
+                <MatchBadge score={a.match_score} />
+              </div>
             </Link>
           ))}
         </div>

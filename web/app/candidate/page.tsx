@@ -3,103 +3,71 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { api, type Job } from '@/lib/api';
 import { RequireRole, useApp } from '@/components/Providers';
-import { Bar, CompanyLogo, Empty, JobCard, ScoreRing, timeAgo } from '@/components/ui';
+import { Avatar, Empty, JobRow, StatusPill } from '@/components/ui';
 
 type Dash = {
   strength: { percent: number; todo: string[] }; hasCv: boolean; cvHeadline: string;
-  recommended: Job[]; skillGaps: { skill: string; jobs: number }[];
-  invites: { job_id: number; message: string; created_at: string; title: string; company: string; color: string }[];
-  applications: Record<string, number> & { total: number }; cvViews7d: number;
+  recommended: Job[];
+  invites: { job_id: number; title: string; company: string }[];
 };
+type App = { id: number; status: string; job_id: number; title: string; company: string };
 
 function Dashboard() {
   const { user } = useApp();
   const [d, setD] = useState<Dash | null>(null);
-  useEffect(() => { api<Dash>('/me/dashboard').then(setD).catch(() => {}); }, []);
+  const [apps, setApps] = useState<App[]>([]);
+  useEffect(() => {
+    api<Dash>('/me/dashboard').then(setD).catch(() => {});
+    api<{ applications: App[] }>('/me/applications').then((x) => setApps(x.applications)).catch(() => {});
+  }, []);
   if (!d) return <div className="page"><div className="skeleton" style={{ height: 300 }} /></div>;
-  const active = (d.applications.shortlisted || 0) + (d.applications.interview || 0) + (d.applications.offer || 0);
 
   return (
-    <div className="page">
+    <div className="page" style={{ maxWidth: 1040 }}>
       <div className="page-head">
-        <div>
-          <h1>Hi {user!.name.split(' ')[0]} 👋</h1>
-          <p className="muted">{d.hasCv ? d.cvHeadline : 'Let’s build your CV. The AI agent does the writing.'}</p>
-        </div>
-        <div className="row">
-          <Link href="/candidate/profile" className="btn">Edit profile</Link>
-          <Link href={d.hasCv ? '/candidate/cv' : '/candidate/profile'} className="btn ai">✦ {d.hasCv ? 'View my CV' : 'Create my CV'}</Link>
-        </div>
-      </div>
-
-      <div className="grid-4" style={{ marginBottom: 20 }}>
-        <div className="card stat"><b>{d.applications.total}</b><span>applications sent</span></div>
-        <div className="card stat"><b>{active}</b><span>in progress (shortlist → offer)</span></div>
-        <div className="card stat"><b>{d.recommended.filter((j) => (j.match?.score || 0) >= 55).length}</b><span>strong matches waiting</span></div>
-        <div className="card stat"><b>{d.cvViews7d}</b><span>CV views by employers (7d)</span></div>
-      </div>
-
-      {d.invites.length > 0 && (
-        <div className="card invite" style={{ marginBottom: 20 }}>
-          <p className="eyebrow">Employers want you</p>
-          <div className="stack">
-            {d.invites.map((i) => (
-              <Link key={i.job_id} href={`/jobs/${i.job_id}`} className="row">
-                <CompanyLogo name={i.company} color={i.color} size={38} />
-                <div className="grow"><b>{i.company}</b> invited you to apply for <b>{i.title}</b><div className="muted small">{i.message}</div></div>
-                <span className="btn accent sm">View job</span>
-              </Link>
-            ))}
+        <div className="hello">
+          <Avatar name={user!.name} color={user!.avatar_color} src={user!.avatar_url} size={64} />
+          <div>
+            <span className="label">Dashboard</span>
+            <h1 style={{ margin: '6px 0 0' }}>Hi, {user!.name.split(' ')[0]}</h1>
           </div>
         </div>
+        <Link href={d.hasCv ? '/candidate/cv' : '/candidate/profile'} className="btn primary">{d.hasCv ? 'My CV' : 'Create my CV'}</Link>
+      </div>
+
+      {d.invites[0] && (
+        <Link href={`/jobs/${d.invites[0].job_id}`} className="invite">
+          <span className="label red">Invited</span>
+          <p className="grow"><b>{d.invites[0].company}</b> wants you to apply for <b>{d.invites[0].title}</b></p>
+          <span className="arrow-link">View</span>
+        </Link>
+      )}
+      {!d.invites[0] && d.strength.todo[0] && (
+        <Link href="/candidate/profile" className="invite">
+          <span className="label">Next step</span>
+          <p className="grow">{d.strength.todo[0]}</p>
+          <span className="arrow-link">Go</span>
+        </Link>
       )}
 
-      <div className="grid-2">
-        <div className="stack">
-          <div className="section-head" style={{ marginBottom: 0 }}>
-            <div><p className="eyebrow">Picked by the agent</p><h2>Recommended for you</h2></div>
-            <Link href="/jobs" className="btn sm">All jobs</Link>
-          </div>
+      <div className="cols" style={{ gridTemplateColumns: 'minmax(0,1fr) 300px' }}>
+        <div>
+          <div className="section-label"><h2>Best matches</h2><Link href="/jobs" className="arrow-link small">All jobs</Link></div>
           {d.recommended.length ? (
-            <div className="cards" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>{d.recommended.map((j) => <JobCard key={j.id} job={j} />)}</div>
-          ) : <Empty title="No recommendations yet"><p>Add skills to your profile so the agent can match you.</p></Empty>}
+            <div className="list">{d.recommended.slice(0, 5).map((j) => <JobRow key={j.id} job={j} />)}</div>
+          ) : <Empty title="No matches yet"><p>Add skills to your profile.</p></Empty>}
         </div>
 
-        <div className="stack">
-          <div className="card">
-            <h3>Profile strength</h3>
-            <div className="strength">
-              <ScoreRing score={d.strength.percent} size={64} />
-              <div className="grow">
-                {d.strength.todo.length ? (
-                  <ul className="tidy small">{d.strength.todo.slice(0, 4).map((t) => <li key={t}>{t}</li>)}</ul>
-                ) : <p className="small" style={{ margin: 0 }}>Your profile is complete. Employers see you at your best.</p>}
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <h3>Skills employers want from you</h3>
-            <p className="muted small">Skills missing from jobs you almost match. Learning one of these unlocks more matches.</p>
-            {d.skillGaps.length ? (
-              <div className="funnel">
-                {d.skillGaps.map((g) => (
-                  <div key={g.skill}><span>{g.skill}</span><Bar value={(g.jobs / d.skillGaps[0].jobs) * 100} tone="accent" /><b>{g.jobs}</b></div>
-                ))}
-              </div>
-            ) : <p className="small">No gaps found. Nice!</p>}
-          </div>
-
-          <div className="card">
-            <div className="card-title"><h3>Applications</h3><Link href="/candidate/applications" className="btn-link small">See all</Link></div>
-            <div className="funnel">
-              {['applied', 'shortlisted', 'interview', 'offer', 'rejected'].map((s) => (
-                <div key={s}><span style={{ textTransform: 'capitalize' }}>{s === 'rejected' ? 'Not selected' : s}</span><Bar value={((d.applications[s] || 0) / Math.max(1, d.applications.total)) * 100} tone={s === 'rejected' ? 'low' : s === 'applied' ? undefined : 'great'} /><b>{d.applications[s] || 0}</b></div>
-              ))}
-            </div>
-            <p className="muted small" style={{ margin: '12px 0 0' }}>Updated {timeAgo(new Date().toISOString())}</p>
-          </div>
-        </div>
+        <aside>
+          <div className="section-label"><h3>Applications</h3><Link href="/candidate/applications" className="arrow-link small">All</Link></div>
+          {apps.slice(0, 4).map((a) => (
+            <Link key={a.id} href={`/jobs/${a.job_id}`} className="row nowrap" style={{ padding: '14px 0', borderBottom: '1px solid var(--line)' }}>
+              <span className="grow small"><b style={{ fontWeight: 600 }}>{a.title}</b><br /><span className="muted">{a.company}</span></span>
+              <StatusPill status={a.status} />
+            </Link>
+          ))}
+          {!apps.length && <p className="muted small" style={{ marginTop: 14 }}>None yet.</p>}
+        </aside>
       </div>
     </div>
   );

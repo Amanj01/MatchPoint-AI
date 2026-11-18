@@ -3,7 +3,7 @@ import { sql } from '../db/client';
 import { HttpError } from './http';
 import { scoreMatch, type Profile } from './match';
 
-export type Candidate = { user: { id: number; name: string; email: string; avatar_color: string }; profile: Profile & Record<string, any>; cv: any | null };
+export type Candidate = { user: { id: number; name: string; email: string; avatar_color: string; avatar_url?: string | null }; profile: Profile & Record<string, any>; cv: any | null };
 
 const num = (v: any) => (v == null ? v : Number(v));
 
@@ -13,7 +13,7 @@ export function cleanProfile(row: any): Profile & Record<string, any> {
 }
 
 export async function loadCandidate(userId: number): Promise<Candidate> {
-  const [user] = await sql`SELECT id, name, email, avatar_color FROM users WHERE id = ${userId} AND role = 'candidate'`;
+  const [user] = await sql`SELECT id, name, email, avatar_color, avatar_url FROM users WHERE id = ${userId} AND role = 'candidate'`;
   if (!user) throw new HttpError(404, 'Candidate not found.');
   const [profile] = await sql`SELECT * FROM profiles WHERE user_id = ${userId}`;
   const [cv] = await sql`SELECT content FROM cvs WHERE user_id = ${userId}`;
@@ -23,11 +23,11 @@ export async function loadCandidate(userId: number): Promise<Candidate> {
 /** All candidates who are open to work, for employer-side recommendations. */
 export async function loadOpenCandidates(): Promise<Candidate[]> {
   const rows = await sql`
-    SELECT u.id, u.name, u.email, u.avatar_color, p.*, c.content AS cv
+    SELECT u.id, u.name, u.email, u.avatar_color, u.avatar_url, p.*, c.content AS cv
     FROM users u JOIN profiles p ON p.user_id = u.id LEFT JOIN cvs c ON c.user_id = u.id
     WHERE u.role = 'candidate' AND p.open_to_work`;
   return rows.map((r: any) => ({
-    user: { id: r.id, name: r.name, email: r.email, avatar_color: r.avatar_color },
+    user: { id: r.id, name: r.name, email: r.email, avatar_color: r.avatar_color, avatar_url: r.avatar_url },
     profile: cleanProfile(r),
     cv: r.cv ?? null,
   }));
@@ -36,7 +36,7 @@ export async function loadOpenCandidates(): Promise<Candidate[]> {
 export async function loadJobs(opts: { companyId?: number; openOnly?: boolean } = {}) {
   const rows = await sql`
     SELECT j.*, c.name AS company_name, c.color AS company_color, c.industry AS company_industry,
-           c.location AS company_location, c.owner_id AS employer_id,
+           c.location AS company_location, c.cover_url AS company_cover, c.owner_id AS employer_id,
            (SELECT count(*)::int FROM applications a WHERE a.job_id = j.id) AS applicants,
            (SELECT count(*)::int FROM applications a WHERE a.job_id = j.id AND a.created_at > now() - interval '1 day') AS applicants_today
     FROM jobs j JOIN companies c ON c.id = j.company_id
@@ -52,7 +52,7 @@ export function serializeJob(r: any) {
     salary_min: r.salary_min, salary_max: r.salary_max, currency: r.currency,
     description: r.description, responsibilities: r.responsibilities, requirements: r.requirements, nice_to_have: r.nice_to_have,
     status: r.status, views: r.views, created_at: r.created_at, applicants: r.applicants ?? 0,
-    company: { id: r.company_id, name: r.company_name, color: r.company_color, industry: r.company_industry, location: r.company_location },
+    company: { id: r.company_id, name: r.company_name, color: r.company_color, industry: r.company_industry, location: r.company_location, cover: r.company_cover },
     employer_id: r.employer_id,
   };
 }
@@ -60,7 +60,7 @@ export function serializeJob(r: any) {
 export async function loadJob(id: number) {
   const [row] = await sql`
     SELECT j.*, c.name AS company_name, c.color AS company_color, c.industry AS company_industry,
-           c.location AS company_location, c.owner_id AS employer_id, c.about AS company_about, c.size AS company_size, c.website AS company_website,
+           c.location AS company_location, c.cover_url AS company_cover, c.owner_id AS employer_id, c.about AS company_about, c.size AS company_size, c.website AS company_website,
            (SELECT count(*)::int FROM applications a WHERE a.job_id = j.id) AS applicants
     FROM jobs j JOIN companies c ON c.id = j.company_id WHERE j.id = ${id}`;
   if (!row) throw new HttpError(404, 'Job not found.');
@@ -71,7 +71,7 @@ export async function loadJob(id: number) {
 export function candidateCard(c: Candidate, job: any) {
   const m = scoreMatch(c, job);
   return {
-    id: c.user.id, name: c.user.name, avatar_color: c.user.avatar_color,
+    id: c.user.id, name: c.user.name, avatar_color: c.user.avatar_color, avatar_url: c.user.avatar_url,
     headline: c.cv?.headline || c.profile.desired_role || '', location: c.profile.location,
     years_experience: c.profile.years_experience, has_cv: !!c.cv,
     match: m,

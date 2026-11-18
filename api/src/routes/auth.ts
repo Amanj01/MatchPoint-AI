@@ -46,7 +46,7 @@ export const logout: Handler = async (req, ctx) => {
 export const me: Handler = (_req, ctx) => ({ user: ctx.user });
 
 async function meFor(ctx: any, id: number) {
-  const [row] = await sql`SELECT u.id, u.email, u.name, u.role, u.avatar_color, c.id AS company_id, c.name AS company_name
+  const [row] = await sql`SELECT u.id, u.email, u.name, u.role, u.avatar_color, u.avatar_url, c.id AS company_id, c.name AS company_name
     FROM users u LEFT JOIN companies c ON c.owner_id = u.id WHERE u.id = ${id}`;
   return row;
 }

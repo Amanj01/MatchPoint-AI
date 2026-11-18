@@ -20,7 +20,7 @@ export async function loadUser(req: Request): Promise<SessionUser | null> {
   const token = readToken(req);
   if (!token) return null;
   const [row] = await sql`
-    SELECT u.id, u.email, u.name, u.role, u.avatar_color, c.id AS company_id, c.name AS company_name
+    SELECT u.id, u.email, u.name, u.role, u.avatar_color, u.avatar_url, c.id AS company_id, c.name AS company_name
     FROM sessions s JOIN users u ON u.id = s.user_id
     LEFT JOIN companies c ON c.owner_id = u.id
     WHERE s.token = ${token} AND s.created_at > now() - interval '14 days'`;

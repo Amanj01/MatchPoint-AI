@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { api, type User } from '@/lib/api';
 import { useApp } from '@/components/Providers';
+import { AuthPhoto } from '@/components/AuthPhoto';
 
 export default function Login() {
   const { setUser } = useApp();
@@ -26,7 +27,7 @@ export default function Login() {
 
   return (
     <div className="auth">
-      <div className="card">
+      <div className="auth-form">
         <h1>Welcome back</h1>
         <p className="muted">Log in to see your matches and applications.</p>
         <form className="stack" onSubmit={signIn}>
@@ -42,6 +43,7 @@ export default function Login() {
         </div>
         <p className="muted small" style={{ marginTop: 16, marginBottom: 0 }}>New here? <Link href="/register" className="btn-link">Create an account</Link></p>
       </div>
+      <AuthPhoto variant={"login"} />
     </div>
   );
 }

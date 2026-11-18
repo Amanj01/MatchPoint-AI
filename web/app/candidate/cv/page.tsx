@@ -26,7 +26,7 @@ function MyCv() {
     <div className="page narrow">
       <Empty title="You don’t have a CV yet">
         <p>Fill in your profile and the AI agent will write it for you in seconds.</p>
-        <Link href="/candidate/profile" className="btn ai">✦ Create my CV</Link>
+        <Link href="/candidate/profile" className="btn ai">Create my CV</Link>
       </Empty>
     </div>
   );
@@ -51,7 +51,7 @@ function MyCv() {
       </div>
 
       {editing && (
-        <div className="card no-print stack" style={{ marginBottom: 20 }}>
+        <div className="panel no-print stack" style={{ marginBottom: 20 }}>
           <label className="field">Headline<input className="input" value={draft.headline} onChange={(e) => setDraft({ ...draft, headline: e.target.value })} /></label>
           <label className="field">Summary<textarea className="input" rows={4} value={draft.summary} onChange={(e) => setDraft({ ...draft, summary: e.target.value })} /></label>
           <div><button className="btn primary" onClick={async () => { await patch(draft); setEditing(false); toast('CV updated'); }}>Save changes</button></div>
@@ -59,7 +59,7 @@ function MyCv() {
       )}
 
       {row.content.keywords?.length > 0 && (
-        <div className="card no-print" style={{ marginBottom: 20 }}>
+        <div className="no-print" style={{ marginBottom: 20 }}>
           <div className="row"><b>ATS keywords in your CV</b><span className="muted small">Applicant tracking systems look for these</span></div>
           <div className="chips" style={{ marginTop: 8 }}>{row.content.keywords.map((k) => <span key={k} className="chip ok">{k}</span>)}</div>
         </div>
