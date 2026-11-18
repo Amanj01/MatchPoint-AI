@@ -1,0 +1,17 @@
+{
+  "name": "matchpoint-ai",
+  "private": true,
+  "description": "AI career portal: AI-written CVs, job recommendations for candidates and candidate recommendations for employers.",
+  "workspaces": ["api", "web"],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "dev:api": "bun run --cwd api dev",
+    "dev:web": "bun run --cwd web dev",
+    "db:setup": "bun run --cwd api db:setup",
+    "seed": "bun run --cwd api seed",
+    "simulate": "bun run --cwd api simulate",
+    "test": "bun run --cwd api test",
+    "build": "bun run --cwd web build",
+    "smoke:gemini": "bun run --cwd api smoke:gemini"
+  }
+}

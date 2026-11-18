@@ -1,0 +1,17 @@
+{
+  "name": "@matchpoint/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "db:setup": "bun src/db/migrate.ts",
+    "seed": "bun src/db/seed.ts",
+    "simulate": "bun src/db/simulate.ts",
+    "test": "bun test",
+    "smoke:gemini": "bun src/smoke-gemini.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
